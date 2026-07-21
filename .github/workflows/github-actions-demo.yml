@@ -9,6 +9,8 @@ on:
 
 jobs:
   build:
+  environment:
+    name: Testing
     runs-on: ubuntu-latest
     steps:
       # check in github marketplace for actions
