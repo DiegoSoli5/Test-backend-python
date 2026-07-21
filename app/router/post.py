@@ -18,7 +18,7 @@ def get_posts(db: Session = Depends(get_db), limit: int = 10, skip: int = 0, sea
     # cursor.execute("""SELECT * FROM posts""")
     # data = cursor.fetchall()
     # data = db.query(models.Post).filter(models.Post.title.contains(search)).limit(limit).offset(skip).all()
-    result = db.query(models.Post, func.count(models.Vote.post_id).label("votes")).join(models.Vote, models.Vote.post_id == models.Post.id, isouter=True).group_by(models.Post.id).filter(models.Post.title.contains(search)).limit(limit).offset(skip).all()
+    result = db.query(models.Post, func.count(models.Vote.post_id).label("votes")).join(models.Vote, models.Vote.post_id == models.Post.id, isouter=True).group_by(models.Post.id).order_by(models.Post.id.asc()).filter(models.Post.title.contains(search)).limit(limit).offset(skip).all()
 
     return result
 
@@ -57,8 +57,10 @@ def get_latest_post(db: Session = Depends(get_db), response_model=schemas.Respon
     return latest_post
 
 # geting a single post by id
+
+# Adding oauth2 here
 @router.get("/{id}", response_model=schemas.PostWithVotes)
-def get_post(id: int, db: Session = Depends(get_db)):
+def get_post(id: int, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
     # cursor.execute("""SELECT * FROM posts WHERE id = %s""", (id,))
     # data = cursor.fetchone()
     data = db.query(models.Post, func.count(models.Vote.post_id).label("votes")).join(models.Vote, models.Vote.post_id == models.Post.id, isouter=True).group_by(models.Post.id).filter(models.Post.id == id).first()
@@ -89,7 +91,8 @@ def delete_post(id: int, db: Session = Depends(get_db), current_user: int = Depe
     db.commit()
     return {"deleted_post": deleted_post}
 
-@router.put("/{id}")
+#adding the response model to the update post route
+@router.put("/{id}", response_model=schemas.Post)
 def update_post(id: int, post: schemas.UpdatePost, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
     # cursor.execute("""UPDATE posts SET title = %s, content = %s, published = %s WHERE id = %s RETURNING *""",
     #                (post.title, post.content, post.published, id))
@@ -104,7 +107,9 @@ def update_post(id: int, post: schemas.UpdatePost, db: Session = Depends(get_db)
     if updated_post.user_id != current_user.id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to perform requested action")
     
+    
+    
     post_query.update(post.model_dump(exclude_unset=True))
     
     db.commit()
-    return {"updated_post": post_query.first()}
+    return post_query.first()

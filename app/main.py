@@ -7,7 +7,6 @@ from .router import post, user, auth, vote
 from fastapi.middleware.cors import CORSMiddleware
 
 
-
 # this line used to create the tables in the database, but now we are using alembic to manage the migrations
 # models.Base.metadata.create_all(bind=engine)
 
@@ -33,3 +32,5 @@ app.include_router(vote.router)
 @app.get("/")
 def root():
     return {"Hello": "server is running"}
+
+
