@@ -88,6 +88,4 @@ jobs:
           script: |
             cd app/src
             git pull origin main
-          # echo ${{ secrets.SERVER_PASSWORD }} | sudo -S systemctl restart api
             sudo systemctl restart api
-            
