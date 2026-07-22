@@ -20,6 +20,7 @@ jobs:
       SECRET_KEY: ${{ secrets.SECRET_KEY }}
       ALGORITHM: ${{ secrets.ALGORITHM }}
       ACCESS_TOKEN_EXPIRE_MINUTES: ${{ secrets.ACCESS_TOKEN_EXPIRE_MINUTES }}
+      
     services:
       postgres:
         image: postgres
@@ -64,12 +65,11 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
       
-      - name: Build and push Docker image
+      - name: Build and push
         uses: docker/build-push-action@v7
         with:
-          push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ steps.meta.outputs.tags }}
-          annotations: ${{ steps.meta.outputs.annotations }}
-          provenance: true
-          sbom: true
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/socialmedia-fastapi:latest
+          cache-from: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/socialmedia-fastapi:buildcache
+          cache-to: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/socialmedia-fastapi:buildcache,mode=max
 
