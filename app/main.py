@@ -31,6 +31,6 @@ app.include_router(vote.router)
 
 @app.get("/")
 def root():
-    return {"Hello": "server is running"}
+    return {"Hello": "server is running, CI/CD is working"}
 
 
